@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>GuiBot - A pure Javascript framework to create conversational UIs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="GuiBot - A pure Javascript framework to create conversational UIs">
+
+    <link rel="stylesheet" href="./css/guibot.css" />
+
+    <script src="./lib/deventor.min.js"></script>
+    <script src="./lib/guibot.js"></script>
+  </head>
+
+  <body style="margin: 0px; background-color: #DDDDDD; overflow: hidden;">
+    <script>
+      var guiBot = new GuiBot();
+
+      guiBot.bot({
+        message: 'Ey',
+        delay: 1000
+      });
+
+      guiBot.on(GuiBot.GUIBOT_EVENTS.MESSAGE_SAID, function (messageObject) {
+        console.log(messageObject);
+
+        if (messageObject.type === GuiBot.TYPES.HUMAN) {
+          guiBot.setBotName(messageObject.message);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+{
+	"options": {
+		"jshintrc": true
+	},
+	"source": {
+		"src": ["src/js/GuiBot.js"]
+	},
+	"grunt": {
+		"src": ["Gruntfile.js"]
+	}
+}

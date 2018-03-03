@@ -1,0 +1,187 @@
+.hidden {
+  display: none;
+}
+.w-100 {
+  width: 100% !important;
+}
+/* Variables */
+.guibot-container {
+  height: 100%;
+  position: relative;
+  box-sizing: border-box;
+}
+.guibot-container *,
+.guibot-container *::after,
+.guibot-container *::before {
+  box-sizing: inherit;
+}
+.guibot-container .guibot-chat-container {
+  line-height: 1;
+  height: calc(100% - 60px);
+  overflow-y: auto;
+}
+.guibot-container .guibot-chat-container::-webkit-scrollbar {
+  width: 0.313em;
+}
+.guibot-container .guibot-chat-container::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+.guibot-container .guibot-chat-container::-webkit-scrollbar-thumb {
+  background-color: #A9A9A9;
+  outline: 1px solid #708090;
+}
+.guibot-container .guibot-chat-container .guibot-message-container {
+  margin: 19px;
+}
+.guibot-container .guibot-chat-container .guibot-message-container[data-message-type='bot'] {
+  text-align: left;
+}
+.guibot-container .guibot-chat-container .guibot-message-container[data-message-type='human'] {
+  text-align: right;
+}
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message-icon-container {
+  display: inline-block;
+  width: 40px;
+  vertical-align: top;
+  line-height: 0;
+  -webkit-box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
+  -moz-box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
+  box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
+}
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message-icon-container .guibot-message-icon {
+  width: 100%;
+}
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message {
+  font-size: 16px;
+  padding: 15px;
+  width: auto;
+  max-width: 80%;
+  display: inline-block;
+  text-align: left;
+  color: #233140;
+  -webkit-animation: fadein 150ms;
+  /* Safari, Chrome and Opera > 12.1 */
+  -moz-animation: fadein 150ms;
+  /* Firefox < 16 */
+  -ms-animation: fadein 150ms;
+  /* Internet Explorer */
+  -o-animation: fadein 150ms;
+  /* Opera < 12.1 */
+  animation: fadein 150ms;
+  -webkit-box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
+  -moz-box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
+  box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
+}
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message.bot {
+  background-color: #FFFFFF;
+}
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message.human {
+  background-color: #FFFFFF;
+}
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message .guibot-message-username {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message .guibot-message-text {
+  display: block;
+  word-wrap: break-word;
+  margin-bottom: 5px;
+}
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message .guibot-message-time {
+  text-align: right;
+  font-size: 13px;
+  margin-top: 15px;
+  font-style: italic;
+}
+.guibot-container .guibot-action-container {
+  position: relative;
+  min-height: 60px;
+  -webkit-box-align: end;
+  -ms-flex-align: end;
+  align-items: flex-end;
+  background-color: #EAEAEA;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  max-width: 100%;
+  padding: 10px 19px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.guibot-container .guibot-action-container .guibot-input-container {
+  border-radius: 5px;
+  width: inherit;
+  background-color: #FFFFFF;
+  -webkit-box-flex: 1;
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  border-color: #FFFFFF;
+  border-width: 1px;
+  border-style: solid;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  padding-right: 16px;
+  outline: none;
+  border: none;
+  line-height: 20px;
+  font-size: 15px;
+  min-height: 20px;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+.guibot-container .guibot-action-container .guibot-input-container .guibot-input-text-container {
+  position: relative;
+}
+.guibot-container .guibot-action-container .guibot-input-container .guibot-input-text-container .guibot-input-placeholder {
+  top: 0;
+  margin-left: 2px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  position: absolute;
+  top: 3px;
+  left: 0px;
+  color: #A4A4A4;
+  pointer-events: none;
+  -webkit-transition: opacity .08s linear;
+  transition: opacity .08s linear;
+  z-index: 100;
+  font-size: 15px;
+  line-height: 20px;
+  z-index: 0;
+  font-style: italic;
+}
+.guibot-container .guibot-action-container .guibot-input-container .guibot-input-text-container .guibot-input {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  padding: 0 2px 0 0;
+  min-height: 20px;
+  max-height: 100px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: rgba(255, 255, 255, 0);
+  border-left: 0.1px solid transparent;
+  position: relative;
+  z-index: 1;
+  line-height: 20px;
+  font-size: 15px;
+  color: #000000;
+  font-style: normal;
+  background-color: transparent;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  width: 100%;
+  outline: none;
+}
+/* Media query */
