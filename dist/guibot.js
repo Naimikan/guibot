@@ -1,5 +1,5 @@
 /*!
-*  guibot 0.0.1 2018-03-04
+*  guibot 0.0.2 2018-03-04
 *  A pure Javascript framework to create conversational UIs
 *  git: git+https://github.com/Naimikan/guibot.git
 */
@@ -14,14 +14,6 @@ window.GuiBot = (function () {
   if (typeof Deventor === 'undefined') {
     throw new Error('Deventor is not included.');
   }
-
-  var GUIBOT_SETTINGS = {
-    EVENT_PREFIX: 'GuiBot:',
-    TYPES: {
-      BOT: 'bot',
-      HUMAN: 'human'
-    }
-  };
 
   var Utils = {
     generateGUID: function () {
@@ -107,19 +99,26 @@ window.GuiBot = (function () {
     _guibotInput.setAttribute('dir', 'auto');
     _guibotInput.setAttribute('spellcheck', true);
     _guibotInput.setAttribute('contenteditable', true);
+    _guibotInput.setAttribute('data-placeholder', GuiBot.GUIBOT_DEFAULTS.INPUT_PLACEHOLDER);
     _guibotInput.className = _guibotInput.getAttribute('id');
 
-    _guibotInput.addEventListener('keydown', function (event) {
+    _guibotInput.addEventListener('input', function (event) {
+      if (event.target.textContent.length === 0) {
+        while (_guibotInput.firstChild) _guibotInput.removeChild(_guibotInput.firstChild);
+      }
+    });
+
+    _guibotInput.addEventListener('keypress', function (event) {
       if (event.keyCode === 13) {
         event.preventDefault();
         event.stopPropagation();
 
         self.human({
-          message: event.target.innerHTML,
+          message: event.target.textContent,
           delay: 150
         });
 
-        _guibotInput.innerHTML = '';
+        while (_guibotInput.firstChild) _guibotInput.removeChild(_guibotInput.firstChild);
       }
     });
 
@@ -172,7 +171,7 @@ window.GuiBot = (function () {
     };
 
     var _addMessageIcon = function (messageId, messageContainer, who, user) {
-      user = user || (who === GUIBOT_SETTINGS.TYPES.BOT ? _bot : _human);
+      user = user || (who === GuiBot.TYPES.BOT ? _bot : _human);
 
       var guibotMessageIconContainer = document.createElement('div');
       guibotMessageIconContainer.className = 'guibot-message-icon-container';
@@ -186,7 +185,7 @@ window.GuiBot = (function () {
     };
 
     var _addMessageName = function (messageId, messageContainer, who, user) {
-      user = user || (who === GUIBOT_SETTINGS.TYPES.BOT ? _bot : _human);
+      user = user || (who === GuiBot.TYPES.BOT ? _bot : _human);
 
       var messageUsername = document.createElement('div');
       messageUsername.className = 'guibot-message-username ' + who;
@@ -214,7 +213,7 @@ window.GuiBot = (function () {
             guibotMessageContainer.setAttribute('data-message-type', who);
             guibotMessageContainer.setAttribute('id', messageId);
 
-            if (who === GUIBOT_SETTINGS.TYPES.BOT) _addMessageIcon(messageId, guibotMessageContainer, who, options.user);
+            if (who === GuiBot.TYPES.BOT) _addMessageIcon(messageId, guibotMessageContainer, who, options.user);
 
             var guibotMessage = document.createElement('div');
             guibotMessage.className = 'guibot-message ' + who;
@@ -225,7 +224,7 @@ window.GuiBot = (function () {
 
             guibotMessageContainer.appendChild(guibotMessage);
 
-            if (who === GUIBOT_SETTINGS.TYPES.HUMAN) _addMessageIcon(messageId, guibotMessageContainer, who, options.user);
+            if (who === GuiBot.TYPES.HUMAN) _addMessageIcon(messageId, guibotMessageContainer, who, options.user);
 
             _guibotChatContainer.appendChild(guibotMessageContainer);
 
@@ -255,7 +254,7 @@ window.GuiBot = (function () {
     /* Public methods */
     this.bot = function (options) {
       return new Promise(function (resolve, reject) {
-        _say(GUIBOT_SETTINGS.TYPES.BOT, options).then(function (result) {
+        _say(GuiBot.TYPES.BOT, options).then(function (result) {
           resolve(result);
         }).catch(function (error) {
           reject(error);
@@ -265,7 +264,7 @@ window.GuiBot = (function () {
 
     this.human = function (options) {
       return new Promise(function (resolve, reject) {
-        _say(GUIBOT_SETTINGS.TYPES.HUMAN, options).then(function (result) {
+        _say(GuiBot.TYPES.HUMAN, options).then(function (result) {
           resolve(result);
         }).catch(function (error) {
           reject(error);
@@ -281,7 +280,7 @@ window.GuiBot = (function () {
       var oldBotName = _bot.name;
       _bot.name = newBotName;
 
-      var botUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GUIBOT_SETTINGS.TYPES.BOT);
+      var botUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GuiBot.TYPES.BOT);
       var botUsernameElementsArray = Array.prototype.slice.call(botUsernameElements);
 
       botUsernameElementsArray.map(function (eachBotUsername) {
@@ -299,7 +298,7 @@ window.GuiBot = (function () {
       var oldHumanName = _human.name;
       _human.name = newHumanName;
 
-      var humanUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GUIBOT_SETTINGS.TYPES.HUMAN);
+      var humanUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GuiBot.TYPES.HUMAN);
       var humanUsernameElementsArray = Array.prototype.slice.call(humanUsernameElements);
 
       humanUsernameElementsArray.map(function (eachHumanUsername) {
@@ -317,7 +316,7 @@ window.GuiBot = (function () {
       var oldBotNameColor = _bot.color;
       _bot.color = newBotNameColor;
 
-      var botUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GUIBOT_SETTINGS.TYPES.BOT);
+      var botUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GuiBot.TYPES.BOT);
       var botUsernameElementsArray = Array.prototype.slice.call(botUsernameElements);
 
       botUsernameElementsArray.map(function (eachBotUsername) {
@@ -335,7 +334,7 @@ window.GuiBot = (function () {
       var oldHumanNameColor = _human.color;
       _human.color = newHumanNameColor;
 
-      var humanUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GUIBOT_SETTINGS.TYPES.HUMAN);
+      var humanUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GuiBot.TYPES.HUMAN);
       var humanUsernameElementsArray = Array.prototype.slice.call(humanUsernameElements);
 
       humanUsernameElementsArray.map(function (eachHumanUsername) {
@@ -353,7 +352,7 @@ window.GuiBot = (function () {
       var oldBotIcon = _bot.icon;
       _bot.icon = newBotIcon;
 
-      var botIconElements = _rootContainer.getElementsByClassName('guibot-message-icon ' + GUIBOT_SETTINGS.TYPES.BOT);
+      var botIconElements = _rootContainer.getElementsByClassName('guibot-message-icon ' + GuiBot.TYPES.BOT);
       var botIconElementsArray = Array.prototype.slice.call(botIconElements);
 
       botIconElementsArray.map(function (eachBotIcon) {
@@ -371,7 +370,7 @@ window.GuiBot = (function () {
       var oldHumanIcon = _human.icon;
       _human.icon = newHumanIcon;
 
-      var humanIconElements = _rootContainer.getElementsByClassName('guibot-message-icon ' + GUIBOT_SETTINGS.TYPES.HUMAN);
+      var humanIconElements = _rootContainer.getElementsByClassName('guibot-message-icon ' + GuiBot.TYPES.HUMAN);
       var humanIconElementsArray = Array.prototype.slice.call(humanIconElements);
 
       humanIconElementsArray.map(function (eachHumanIcon) {
@@ -464,14 +463,17 @@ window.GuiBot = (function () {
   GuiBot.prototype = Object.create(Deventor.prototype);
   GuiBot.prototype.constructor = GuiBot;
 
-  GuiBot.TYPES = GUIBOT_SETTINGS.TYPES;
+  GuiBot.TYPES = {
+    BOT: 'bot',
+    HUMAN: 'human'
+  };
   Object.freeze(GuiBot.TYPES);
 
   GuiBot.VERSION = {
-    full: '0.0.1',
+    full: '0.0.2',
     major: 0,
     minor: 0,
-    patch: 1
+    patch: 2
   };
 
   Object.freeze(GuiBot.VERSION);
@@ -486,21 +488,23 @@ window.GuiBot = (function () {
       ICON: 'https://www.shareicon.net/download/2016/01/19/705714_people.svg',
       NAME: 'Me',
       NAME_COLOR: '#5F7BC0'
-    }
+    },
+    INPUT_PLACEHOLDER: 'Write a message here'
   };
 
+  var EVENT_PREFIX = 'GuiBot:';
   GuiBot.GUIBOT_EVENTS = {
-    MESSAGE_SAID: GUIBOT_SETTINGS.EVENT_PREFIX + 'messageSaid',
-    MESSAGE_UPDATED: GUIBOT_SETTINGS.EVENT_PREFIX + 'messageUpdated',
-    MESSAGE_REMOVED: GUIBOT_SETTINGS.EVENT_PREFIX + 'messageRemoved',
-    MESSAGE_OPTION_CLICKED: GUIBOT_SETTINGS.EVENT_PREFIX + 'messageOptionClicked',
-    NAME_CHANGED: GUIBOT_SETTINGS.EVENT_PREFIX + 'nameChanged',
-    BOT_ICON_CHANGED: GUIBOT_SETTINGS.EVENT_PREFIX + 'botIconChanged',
-    BOT_NAME_CHANGED: GUIBOT_SETTINGS.EVENT_PREFIX + 'botNameChanged',
-    BOT_NAME_COLOR_CHANGED: GUIBOT_SETTINGS.EVENT_PREFIX + 'botNameColorChanged',
-    HUMAN_ICON_CHANGED: GUIBOT_SETTINGS.EVENT_PREFIX + 'humanIconChanged',
-    HUMAN_NAME_CHANGED: GUIBOT_SETTINGS.EVENT_PREFIX + 'humanNameChanged',
-    HUMAN_NAME_COLOR_CHANGED: GUIBOT_SETTINGS.EVENT_PREFIX + 'humanNameColorChanged'
+    MESSAGE_SAID: EVENT_PREFIX + 'messageSaid',
+    MESSAGE_UPDATED: EVENT_PREFIX + 'messageUpdated',
+    MESSAGE_REMOVED: EVENT_PREFIX + 'messageRemoved',
+    MESSAGE_OPTION_CLICKED: EVENT_PREFIX + 'messageOptionClicked',
+    NAME_CHANGED: EVENT_PREFIX + 'nameChanged',
+    BOT_ICON_CHANGED: EVENT_PREFIX + 'botIconChanged',
+    BOT_NAME_CHANGED: EVENT_PREFIX + 'botNameChanged',
+    BOT_NAME_COLOR_CHANGED: EVENT_PREFIX + 'botNameColorChanged',
+    HUMAN_ICON_CHANGED: EVENT_PREFIX + 'humanIconChanged',
+    HUMAN_NAME_CHANGED: EVENT_PREFIX + 'humanNameChanged',
+    HUMAN_NAME_COLOR_CHANGED: EVENT_PREFIX + 'humanNameColorChanged'
   };
 
   Object.freeze(GuiBot.GUIBOT_EVENTS);

@@ -22,10 +22,6 @@
 
       guiBot.on(GuiBot.GUIBOT_EVENTS.MESSAGE_SAID, function (messageObject) {
         console.log(messageObject);
-
-        if (messageObject.type === GuiBot.TYPES.HUMAN) {
-          guiBot.setBotName(messageObject.message);
-        }
       });
     </script>
   </body>

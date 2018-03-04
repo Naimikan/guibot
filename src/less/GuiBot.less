@@ -166,18 +166,15 @@
         position: relative;
 
         .guibot-input-placeholder {
-          top: 0;
-          margin-left: 2px;
-
           -webkit-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
           user-select: none;
 
           position: absolute;
-          top: 3px;
-          left: 0px;
-          color: #A4A4A4;
+          top: 0;
+          left: 2px;
+          color: #9D9593;
           pointer-events: none;
 
           -webkit-transition: opacity .08s linear;
@@ -216,11 +213,17 @@
           width: 100%;
           outline: none;
 
-          // &[contenteditable=false] {
-          //   color: #CCCCCC;
-          //   font-style: italic;
-          //   background-color: red;
-          // }
+          &[contenteditable=true]:empty::before {
+            display: block;
+            content: attr(data-placeholder);
+            color: #9D9593;
+            font-style: italic;
+            pointer-events: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+          }
         }
       }
     }
