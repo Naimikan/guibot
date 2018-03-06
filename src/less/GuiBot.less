@@ -100,6 +100,12 @@
           margin-bottom: 5px;
         }
 
+        .guibot-message-image, .guibot-message-video {
+          width: 100%;
+          max-width: 400px;
+          margin: 5px 0;
+        }
+
         .guibot-message-time {
           text-align: right;
           font-size: 13px;
@@ -233,6 +239,13 @@
 /* Media query */
 @media (max-width: 768px) {
   .guibot-container {
+    .guibot-chat-container {
+      max-height: ~"calc(100% - @{inputContainerHeight})";
+    }
 
+    .guibot-action-container {
+      width: 100%;
+      bottom: 0;
+    }
   }
 }

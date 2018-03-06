@@ -1,5 +1,5 @@
 /*!
-*  guibot 0.0.2 2018-03-04
+*  guibot 0.0.3 2018-03-07
 *  A pure Javascript framework to create conversational UIs
 *  git: git+https://github.com/Naimikan/guibot.git
 */
@@ -170,18 +170,47 @@ window.GuiBot = (function () {
       messageContainer.appendChild(messageTextSpan);
     };
 
+    var _addMessageImage = function (messageId, messageContainer, imageUrl) {
+      if (imageUrl) {
+        var messageAnchor = document.createElement('a');
+        messageAnchor.setAttribute('target', '_blank');
+        messageAnchor.setAttribute('href', imageUrl);
+
+        var messageImage = document.createElement('img');
+        messageImage.className = 'guibot-message-image';
+        messageImage.src = imageUrl;
+
+        messageAnchor.appendChild(messageImage);
+        messageContainer.appendChild(messageAnchor);
+      }
+    };
+
+    var _addMessageVideo = function (messageId, messageContainer, videoUrl) {
+      if (videoUrl) {
+        var messageVideo = document.createElement('iframe');
+        messageVideo.className = 'guibot-message-video';
+        messageVideo.setAttribute('src', videoUrl);
+        messageVideo.setAttribute('frameborder', 0);
+        messageVideo.setAttribute('webkitallowfullscreen', '');
+        messageVideo.setAttribute('mozallowfullscreen', '');
+        messageVideo.setAttribute('allowfullscreen', '');
+
+        messageContainer.appendChild(messageVideo);
+      }
+    };
+
     var _addMessageIcon = function (messageId, messageContainer, who, user) {
       user = user || (who === GuiBot.TYPES.BOT ? _bot : _human);
 
-      var guibotMessageIconContainer = document.createElement('div');
-      guibotMessageIconContainer.className = 'guibot-message-icon-container';
+      var messageIconContainer = document.createElement('div');
+      messageIconContainer.className = 'guibot-message-icon-container';
 
-      var guibotMessageIcon = document.createElement('img');
-      guibotMessageIcon.className = 'guibot-message-icon ' + who;
-      guibotMessageIcon.src = user.icon;
+      var messageIcon = document.createElement('img');
+      messageIcon.className = 'guibot-message-icon ' + who;
+      messageIcon.src = user.icon;
 
-      guibotMessageIconContainer.appendChild(guibotMessageIcon);
-      messageContainer.appendChild(guibotMessageIconContainer);
+      messageIconContainer.appendChild(messageIcon);
+      messageContainer.appendChild(messageIconContainer);
     };
 
     var _addMessageName = function (messageId, messageContainer, who, user) {
@@ -219,6 +248,8 @@ window.GuiBot = (function () {
             guibotMessage.className = 'guibot-message ' + who;
 
             _addMessageName(messageId, guibotMessage, who, options.user);
+            _addMessageImage(messageId, guibotMessage, options.imageUrl);
+            _addMessageVideo(messageId, guibotMessage, options.videoUrl);
             _addMessageText(messageId, guibotMessage, message);
             _addMessageTime(messageId, guibotMessage, now);
 
@@ -238,6 +269,7 @@ window.GuiBot = (function () {
               message: message
             };
 
+            if (options.imageUrl) messageObject.imageUrl = options.imageUrl;
             if (options.user) messageObject.user = options.user;
 
             _messages.push(messageObject);
@@ -470,10 +502,10 @@ window.GuiBot = (function () {
   Object.freeze(GuiBot.TYPES);
 
   GuiBot.VERSION = {
-    full: '0.0.2',
+    full: '0.0.3',
     major: 0,
     minor: 0,
-    patch: 2
+    patch: 3
   };
 
   Object.freeze(GuiBot.VERSION);

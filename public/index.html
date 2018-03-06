@@ -18,6 +18,12 @@
       guiBot.bot({
         message: 'Ey',
         delay: 1000
+      }).then(function () {
+        guiBot.bot({
+          message: 'Image',
+          delay: 1000,
+          imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Burgwall_Lossow_Pano_-14_images.jpg'
+        })
       });
 
       guiBot.on(GuiBot.GUIBOT_EVENTS.MESSAGE_SAID, function (messageObject) {
