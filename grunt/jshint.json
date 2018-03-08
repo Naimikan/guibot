@@ -3,7 +3,7 @@
 		"jshintrc": true
 	},
 	"source": {
-		"src": ["src/js/GuiBot.js"]
+		"src": ["dist/<%= package.name %>.js"]
 	},
 	"grunt": {
 		"src": ["Gruntfile.js"]

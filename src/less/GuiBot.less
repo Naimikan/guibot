@@ -5,8 +5,8 @@
 @scrollbarBoxShadowColor: rgba(0, 0, 0, 0.3);
 @scrollbarBackgroundColor: #A9A9A9;
 @scrollbarOutlineColor: #708090;
-@botMessageBackgroundColor: #FFFFFF;
-@humanMessageBackgroundColor: #FFFFFF;
+@remoteMessageBackgroundColor: #FFFFFF;
+@localMessageBackgroundColor: #FFFFFF;
 @actionContainerBackgroundColor: #EAEAEA;
 
 .guibot-container {
@@ -39,11 +39,11 @@
     .guibot-message-container {
       margin: 19px;
 
-      &[data-message-type='bot'] {
+      &[data-message-type='remote'] {
         text-align: left;
       }
 
-      &[data-message-type='human'] {
+      &[data-message-type='local'] {
         text-align: right;
       }
 
@@ -81,12 +81,12 @@
         -moz-box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
         box-shadow: 0px 15px 36px -5px rgba(0, 0, 0 ,0.26);
 
-        &.bot {
-          background-color: @botMessageBackgroundColor;
+        &.remote {
+          background-color: @remoteMessageBackgroundColor;
         }
 
-        &.human {
-          background-color: @humanMessageBackgroundColor;
+        &.local {
+          background-color: @localMessageBackgroundColor;
         }
 
         .guibot-message-username {

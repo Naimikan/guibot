@@ -1,21 +1,27 @@
 /*!
-*  guibot 0.0.3 2018-03-07
+*  guibot 0.1.0 2018-03-09
 *  A pure Javascript framework to create conversational UIs
 *  git: git+https://github.com/Naimikan/guibot.git
 */
 (function (Deventor) {
 'use strict';
-window.GuiBot = (function () {
-  // Unsupported promises
-  if (!(typeof Promise !== 'undefined' && Promise.toString().indexOf('[native code]') !== -1)) {
-    throw new Error('Sorry, your browser doesn\'t support Promises.');
-  }
+var Events = (function () {
+  var EVENT_PREFIX = 'GuiBot:';
 
-  if (typeof Deventor === 'undefined') {
-    throw new Error('Deventor is not included.');
-  }
+  return {
+    MESSAGE_SAID: EVENT_PREFIX + 'messageSaid',
+    MESSAGE_UPDATED: EVENT_PREFIX + 'messageUpdated',
+    MESSAGE_REMOVED: EVENT_PREFIX + 'messageRemoved',
+    MESSAGE_OPTION_CLICKED: EVENT_PREFIX + 'messageOptionClicked',
+    NAME_CHANGED: EVENT_PREFIX + 'nameChanged',
+    USER_ADDED: EVENT_PREFIX + 'userAdded',
+    USER_UPDATED: EVENT_PREFIX + 'userUpdated',
+    USER_REMOVED: EVENT_PREFIX + 'userRemoved'
+  };
+})();
 
-  var Utils = {
+var Utils = (function () {
+  return {
     generateGUID: function () {
       function partGUID () {
         return Math.floor((1 + Math.random() + ((navigator.hardwareConcurrency || Math.random()) * window.innerHeight * window.innerWidth) + (new Date().getTime())) * 0x10000).toString(16).substring(1);
@@ -40,115 +46,77 @@ window.GuiBot = (function () {
         }, delay || 0);
       });
     },
+    isDefinedAndNotNull: function (value) {
+      return typeof value !== 'undefined' && value !== null;
+    },
     isBoolean: function (variable) {
-      return variable === true || variable === false || variable.toString() === '[object Boolean]';
+      return variable === true || variable === false || (typeof variable === 'object' && variable !== null) || variable.toString() === '[object Boolean]';
     }
   };
+})();
 
-  function GuiBot (settings) {
-    Deventor.call(this);
-
-    settings = settings || {};
-
-    var self = this;
-
+var User = (function (Utils) {
+  function User (options) {
+    var _id = options.id || Utils.generateGUID();
+    var _isLocal = options.isLocal || false;
+    var _icon = options.icon || 'data:image/png;base64,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';
     var _messages = [];
-    var _id = Utils.generateGUID();
-    var _name = settings.name ? settings.name : 'guibot-' + _id;
-    var _rootContainer = settings.elementId ? document.getElementById(settings.elementId) : document.body;
-    var _bot = {
-      icon: settings.botIcon || GuiBot.GUIBOT_DEFAULTS.BOT.ICON,
-      name: settings.botName || GuiBot.GUIBOT_DEFAULTS.BOT.NAME,
-      color: settings.botNameColor || GuiBot.GUIBOT_DEFAULTS.BOT.NAME_COLOR
-    };
-    var _human = {
-      icon: settings.humanIcon || GuiBot.GUIBOT_DEFAULTS.HUMAN.ICON,
-      name: settings.humanName || GuiBot.GUIBOT_DEFAULTS.HUMAN.NAME,
-      color: settings.humanNameColor || GuiBot.GUIBOT_DEFAULTS.HUMAN.NAME_COLOR
-    };
+    var _name = options.name || _id;
+    var _extra = {};
 
-    /* Create Main Container */
-    var _guibotContainer = document.createElement('div');
-    _guibotContainer.setAttribute('id', 'guibot-container');
-    _guibotContainer.className = _guibotContainer.getAttribute('id');
-
-    /* Create Chat Container */
-    var _guibotChatContainer = document.createElement('div');
-    _guibotChatContainer.setAttribute('id', 'guibot-chat-container');
-    _guibotChatContainer.className = _guibotChatContainer.getAttribute('id');
-
-    _guibotContainer.appendChild(_guibotChatContainer);
-
-    /* Create Options Container */
-
-    /* Create Action Container */
-    var _guibotActionContainer = document.createElement('div');
-    _guibotActionContainer.setAttribute('id', 'guibot-action-container');
-    _guibotActionContainer.className = _guibotActionContainer.getAttribute('id');
-
-    var _guibotInputContainer = document.createElement('div');
-    _guibotInputContainer.setAttribute('id', 'guibot-input-container');
-    _guibotInputContainer.className = _guibotInputContainer.getAttribute('id');
-
-    var _guibotInputTextContainer = document.createElement('div');
-    _guibotInputTextContainer.setAttribute('id', 'guibot-input-text-container');
-    _guibotInputTextContainer.className = _guibotInputTextContainer.getAttribute('id');
-
-    var _guibotInput = document.createElement('div');
-    _guibotInput.setAttribute('id', 'guibot-input');
-    _guibotInput.setAttribute('dir', 'auto');
-    _guibotInput.setAttribute('spellcheck', true);
-    _guibotInput.setAttribute('contenteditable', true);
-    _guibotInput.setAttribute('data-placeholder', GuiBot.GUIBOT_DEFAULTS.INPUT_PLACEHOLDER);
-    _guibotInput.className = _guibotInput.getAttribute('id');
-
-    _guibotInput.addEventListener('input', function (event) {
-      if (event.target.textContent.length === 0) {
-        while (_guibotInput.firstChild) _guibotInput.removeChild(_guibotInput.firstChild);
-      }
-    });
-
-    _guibotInput.addEventListener('keypress', function (event) {
-      if (event.keyCode === 13) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        self.human({
-          message: event.target.textContent,
-          delay: 150
-        });
-
-        while (_guibotInput.firstChild) _guibotInput.removeChild(_guibotInput.firstChild);
-      }
-    });
-
-    _guibotInputTextContainer.appendChild(_guibotInput);
-    _guibotInputContainer.appendChild(_guibotInputTextContainer);
-    _guibotActionContainer.appendChild(_guibotInputContainer);
-    _guibotContainer.appendChild(_guibotActionContainer);
-
-    _rootContainer.appendChild(_guibotContainer);
-
-    /* Private methods */
-    var _toggleEditInputBox = function (visible) {
-      if (Utils.isBoolean(visible)) {
-        _guibotInput.setAttribute('contenteditable', visible);
-
-        if (visible) _guibotInput.focus();
-      }
-    };
-
-    var _resolveMessage = function (message) {
-      return new Promise(function (resolve, reject) {
-        if (!!(message.constructor && message.call && message.apply)) {
-          // ToDo: Think icon
-
-          message(resolve, reject);
-        } else {
-          resolve(message);
+    for (var attr in options) {
+      if (options.hasOwnProperty(attr)) {
+        if (attr !== 'name' && attr !== 'isLocal' && attr !== 'icon') {
+          _extra[attr] = options[attr];
         }
+      }
+    }
+
+    Object.defineProperty(this, 'id', {
+      get: function () { return _id; }
+    });
+
+    Object.defineProperty(this, 'name', {
+      get: function () { return _name; },
+      set: function (newName) { _name = newName; }
+    });
+
+    Object.defineProperty(this, 'isLocal', {
+      get: function () { return _isLocal; }
+    });
+
+    Object.defineProperty(this, 'extra', {
+      get: function () { return _extra; }
+    });
+
+    Object.defineProperty(this, 'icon', {
+      get: function () { return _icon; },
+      set: function (newIcon) { _icon = newIcon; }
+    });
+
+    this.getMessages = function () {
+      return _messages;
+    };
+
+    this.getMessageById = function (messageId) {
+      return _messages.find(function (eachMessage) {
+        return messageId === eachMessage.id;
       });
     };
+
+    this.addMessage = function (message) {
+      _messages.push(message);
+    };
+  }
+
+  User.prototype.constructor = User;
+
+  return User;
+})(Utils);
+
+var Message = (function (Utils, Events, Deventor) {
+  function Message (options) {
+    Deventor.call(this);
 
     var _addMessageTime = function (messageId, messageContainer, now) {
       var hours = now.getHours() < 10 ? '0' + now.getHours() : now.getHours();
@@ -199,32 +167,250 @@ window.GuiBot = (function () {
       }
     };
 
-    var _addMessageIcon = function (messageId, messageContainer, who, user) {
-      user = user || (who === GuiBot.TYPES.BOT ? _bot : _human);
-
+    var _addMessageIcon = function (messageId, messageContainer, isLocal, user) {
       var messageIconContainer = document.createElement('div');
       messageIconContainer.className = 'guibot-message-icon-container';
 
       var messageIcon = document.createElement('img');
-      messageIcon.className = 'guibot-message-icon ' + who;
+      messageIcon.className = 'guibot-message-icon ' + (isLocal ? 'local' : 'remote');
       messageIcon.src = user.icon;
 
       messageIconContainer.appendChild(messageIcon);
       messageContainer.appendChild(messageIconContainer);
     };
 
-    var _addMessageName = function (messageId, messageContainer, who, user) {
-      user = user || (who === GuiBot.TYPES.BOT ? _bot : _human);
-
+    var _addMessageName = function (messageId, messageContainer, isLocal, user) {
       var messageUsername = document.createElement('div');
-      messageUsername.className = 'guibot-message-username ' + who;
+      messageUsername.className = 'guibot-message-username ' + (isLocal ? 'local' : 'remote');
       messageUsername.innerHTML = user.name;
-      messageUsername.style.color = user.color;
+      // messageUsername.style.color = user.color;
 
       messageContainer.appendChild(messageUsername);
     };
 
-    var _say = function (who, options) {
+    var _id = options.id || Utils.generateGUID();
+    var _message = options.message;
+    var _ts = Utils.isDefinedAndNotNull(options.ts) ? options.ts : new Date().getTime();
+    var _userId;
+    var _imageUrl;
+    var _videoUrl;
+
+    if (!Utils.isDefinedAndNotNull(options.user)) {
+      throw new Error('User attribute required');
+    } else {
+      _userId = options.user.id;
+    }
+
+    if (Utils.isDefinedAndNotNull(options.imageUrl)) _imageUrl = options.imageUrl;
+    if (Utils.isDefinedAndNotNull(options.videoUrl)) _videoUrl = options.videoUrl;
+
+     var _elementDOM = (function () {
+      var messageContainerElement = document.createElement('div');
+      messageContainerElement.className = 'guibot-message-container';
+      messageContainerElement.setAttribute('data-message-type', (options.user.isLocal ? 'local' : 'remote'));
+      messageContainerElement.setAttribute('id', _id);
+
+      if (!options.user.isLocal) _addMessageIcon(_id, messageContainerElement, options.user.isLocal, options.user);
+
+      var messageElement = document.createElement('div');
+      messageElement.className = 'guibot-message ' + (options.user.isLocal ? 'local' : 'remote');
+
+      _addMessageName(_id, messageElement, options.user.isLocal, options.user);
+      _addMessageImage(_id, messageElement, _imageUrl);
+      _addMessageVideo(_id, messageElement, _videoUrl);
+      _addMessageText(_id, messageElement, _message);
+      _addMessageTime(_id, messageElement, new Date(_ts));
+
+      messageContainerElement.appendChild(messageElement);
+
+      if (options.user.isLocal) _addMessageIcon(_id, messageContainerElement, options.user.isLocal, options.user);
+
+      return messageContainerElement;
+    })();
+
+    Object.defineProperty(this, 'id', {
+      get: function () { return _id; }
+    });
+
+    Object.defineProperty(this, 'message', {
+      get: function () { return _message; },
+      set: function (newMessage) {
+        var oldMessage = this.toJSON();
+        _message = newMessage;
+
+        var messageContainer = [].find.call(_elementDOM.children, function (child) {
+          return [].indexOf.call(child.classList, 'guibot-message') !== -1;
+        });
+
+        var messageToUpdate = [].find.call(messageContainer.children, function (child) {
+          return child.className === 'guibot-message-text';
+        });
+
+        messageToUpdate.innerHTML = _message;
+
+        this.emit(Events.MESSAGE_UPDATED, oldMessage, this.toJSON());
+      }
+    });
+
+    Object.defineProperty(this, 'timestamp', {
+      get: function () { return _ts; }
+    });
+
+    Object.defineProperty(this, 'userId', {
+      get: function () { return _userId; }
+    });
+
+    Object.defineProperty(this, 'imageUrl', {
+      get: function () { return _imageUrl; }
+    });
+
+    Object.defineProperty(this, 'videoUrl', {
+      get: function () { return _videoUrl; }
+    });
+
+    Object.defineProperty(this, 'element', {
+      get: function () { return _elementDOM; }
+    });
+
+    this.toJSON = function () {
+      var object = {
+        id: _id,
+        message: _message,
+        timestamp: _ts,
+        userId: _userId,
+        imageUrl: _imageUrl,
+        videoUrl: _videoUrl,
+        element: _elementDOM
+      };
+
+      Object.freeze(object);
+
+      return object;
+    };
+  }
+
+  Message.prototype = Object.create(Deventor.prototype);
+  Message.prototype.constructor = Message;
+
+  return Message;
+})(Utils, Events, Deventor);
+
+window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
+  // Unsupported promises
+  if (!(typeof Promise !== 'undefined' && Promise.toString().indexOf('[native code]') !== -1)) {
+    throw new Error('Sorry, your browser doesn\'t support Promises.');
+  }
+
+  if (typeof Deventor === 'undefined') {
+    throw new Error('Deventor is not included.');
+  }
+
+  function GuiBot (settings) {
+    Deventor.call(this);
+
+    settings = settings || {};
+
+    var self = this;
+
+    var _messages = [];
+    var _users = [];
+    var _id = Utils.generateGUID();
+    var _name = settings.name ? settings.name : 'guibot-' + _id;
+    var _rootContainer = settings.elementId ? document.getElementById(settings.elementId) : document.body;
+
+    /* Create Main Container */
+    var _guibotContainer = document.createElement('div');
+    _guibotContainer.setAttribute('id', 'guibot-container');
+    _guibotContainer.className = _guibotContainer.getAttribute('id');
+
+    /* Create Chat Container */
+    var _guibotChatContainer = document.createElement('div');
+    _guibotChatContainer.setAttribute('id', 'guibot-chat-container');
+    _guibotChatContainer.className = _guibotChatContainer.getAttribute('id');
+
+    _guibotContainer.appendChild(_guibotChatContainer);
+
+    /* Create Options Container */
+
+    /* Create Action Container */
+    var _guibotActionContainer = document.createElement('div');
+    _guibotActionContainer.setAttribute('id', 'guibot-action-container');
+    _guibotActionContainer.className = _guibotActionContainer.getAttribute('id');
+
+    var _guibotInputContainer = document.createElement('div');
+    _guibotInputContainer.setAttribute('id', 'guibot-input-container');
+    _guibotInputContainer.className = _guibotInputContainer.getAttribute('id');
+
+    var _guibotInputTextContainer = document.createElement('div');
+    _guibotInputTextContainer.setAttribute('id', 'guibot-input-text-container');
+    _guibotInputTextContainer.className = _guibotInputTextContainer.getAttribute('id');
+
+    var _guibotInput = document.createElement('div');
+    _guibotInput.setAttribute('id', 'guibot-input');
+    _guibotInput.setAttribute('dir', 'auto');
+    _guibotInput.setAttribute('spellcheck', true);
+    _guibotInput.setAttribute('contenteditable', true);
+    _guibotInput.setAttribute('data-placeholder', GuiBot.GUIBOT_DEFAULTS.INPUT_PLACEHOLDER);
+    _guibotInput.className = _guibotInput.getAttribute('id');
+
+    _guibotInput.addEventListener('input', function (event) {
+      if (event.target.textContent.length === 0) {
+        while (_guibotInput.firstChild) _guibotInput.removeChild(_guibotInput.firstChild);
+      }
+    });
+
+    _guibotInput.addEventListener('keypress', function (event) {
+      if (event.keyCode === 13) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var localUser = self.getLocalUser();
+
+        if (!localUser) {
+          localUser = self.addUser({
+            isLocal: true
+          });
+        }
+
+        self.say({
+          message: event.target.textContent,
+          userId: localUser.id,
+          delay: 150
+        });
+
+        while (_guibotInput.firstChild) _guibotInput.removeChild(_guibotInput.firstChild);
+      }
+    });
+
+    _guibotInputTextContainer.appendChild(_guibotInput);
+    _guibotInputContainer.appendChild(_guibotInputTextContainer);
+    _guibotActionContainer.appendChild(_guibotInputContainer);
+    _guibotContainer.appendChild(_guibotActionContainer);
+
+    _rootContainer.appendChild(_guibotContainer);
+
+    /* Private methods */
+    var _toggleEditInputBox = function (visible) {
+      if (Utils.isBoolean(visible)) {
+        _guibotInput.setAttribute('contenteditable', visible);
+
+        if (visible) _guibotInput.focus();
+      }
+    };
+
+    var _resolveMessage = function (message) {
+      return new Promise(function (resolve, reject) {
+        if (!!(message.constructor && message.call && message.apply)) {
+          // ToDo: Think icon
+
+          message(resolve, reject);
+        } else {
+          resolve(message);
+        }
+      });
+    };
+
+    var _say = function (options) {
       options = options || {};
 
       return new Promise(function (resolve, reject) {
@@ -234,59 +420,45 @@ window.GuiBot = (function () {
           options.message = options.message || '';
 
           _resolveMessage(options.message).then(function (message) {
-            var now = options.ts ? new Date(options.ts) : new Date();
-            var messageId = 'guibot-message-' + now.getTime();
+            if (Utils.isDefinedAndNotNull(options.userId)) {
+              var user = self.getUserById(options.userId);
 
-            var guibotMessageContainer = document.createElement('div');
-            guibotMessageContainer.className = 'guibot-message-container';
-            guibotMessageContainer.setAttribute('data-message-type', who);
-            guibotMessageContainer.setAttribute('id', messageId);
+              var messageInstance = new Message({
+                ts: options.ts,
+                message: message,
+                user: user,
+                imageUrl: options.imageUrl,
+                videoUrl: options.videoUrl
+              });
 
-            if (who === GuiBot.TYPES.BOT) _addMessageIcon(messageId, guibotMessageContainer, who, options.user);
+              messageInstance.on(GuiBot.GUIBOT_EVENTS.MESSAGE_UPDATED, function (oldValue, newValue) {
+                self.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_UPDATED, oldValue, newValue);
+              });
 
-            var guibotMessage = document.createElement('div');
-            guibotMessage.className = 'guibot-message ' + who;
+              user.addMessage(messageInstance);
 
-            _addMessageName(messageId, guibotMessage, who, options.user);
-            _addMessageImage(messageId, guibotMessage, options.imageUrl);
-            _addMessageVideo(messageId, guibotMessage, options.videoUrl);
-            _addMessageText(messageId, guibotMessage, message);
-            _addMessageTime(messageId, guibotMessage, now);
+              _messages.push(messageInstance);
 
-            guibotMessageContainer.appendChild(guibotMessage);
+              _guibotChatContainer.appendChild(messageInstance.element);
 
-            if (who === GuiBot.TYPES.HUMAN) _addMessageIcon(messageId, guibotMessageContainer, who, options.user);
+              Utils.scrollToDownByContainer(_guibotChatContainer);
 
-            _guibotChatContainer.appendChild(guibotMessageContainer);
+              self.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_SAID, messageInstance);
 
-            Utils.scrollToDownByContainer(_guibotChatContainer);
-
-            var messageObject = {
-              element: guibotMessageContainer,
-              id: messageId,
-              ts: now.getTime(),
-              type: who,
-              message: message
-            };
-
-            if (options.imageUrl) messageObject.imageUrl = options.imageUrl;
-            if (options.user) messageObject.user = options.user;
-
-            _messages.push(messageObject);
-
-            self.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_SAID, messageObject);
-
-            _toggleEditInputBox(true);
-            resolve();
+              _toggleEditInputBox(true);
+              resolve();
+            } else {
+              reject(new Error('User ID required'));
+            }
           });
         });
       });
     };
 
     /* Public methods */
-    this.bot = function (options) {
+    this.say = function (options) {
       return new Promise(function (resolve, reject) {
-        _say(GuiBot.TYPES.BOT, options).then(function (result) {
+        _say(options).then(function (result) {
           resolve(result);
         }).catch(function (error) {
           reject(error);
@@ -294,122 +466,51 @@ window.GuiBot = (function () {
       });
     };
 
-    this.human = function (options) {
-      return new Promise(function (resolve, reject) {
-        _say(GuiBot.TYPES.HUMAN, options).then(function (result) {
-          resolve(result);
-        }).catch(function (error) {
-          reject(error);
-        });
+    this.getUsers = function () {
+      return _users;
+    };
+
+    this.getLocalUser = function () {
+      return _users.find(function (eachUser) {
+        return eachUser.isLocal;
       });
     };
 
-    this.getBotName = function () {
-      return _bot.name;
+    this.addUser = function (user) {
+      var userToAdd = new User(user);
+      _users.push(userToAdd);
+
+      this.emit(GuiBot.GUIBOT_EVENTS.USER_ADDED, userToAdd);
+
+      return userToAdd;
     };
 
-    this.setBotName = function (newBotName) {
-      var oldBotName = _bot.name;
-      _bot.name = newBotName;
+    this.getUserById = function (userId) {
+      return _users.find(function (eachUser) {
+        return userId === eachUser.id;
+      });
+    };
 
-      var botUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GuiBot.TYPES.BOT);
-      var botUsernameElementsArray = Array.prototype.slice.call(botUsernameElements);
+    this.updateUserById = function (userId, newUser) {
+      // ToDo
+    };
 
-      botUsernameElementsArray.map(function (eachBotUsername) {
-        eachBotUsername.innerHTML = _bot.name;
+    this.removeUserById = function (userId) {
+      var userToRemove = this.getUserById(userId);
+
+      _users = _users.filter(function (eachUser) {
+        return userId !== eachUser.id;
       });
 
-      this.emit(GuiBot.GUIBOT_EVENTS.BOT_NAME_CHANGED, oldBotName, _bot.name);
+      this.emit(GuiBot.GUIBOT_EVENTS.USER_REMOVED, userToRemove);
     };
 
-    this.getHumanName = function () {
-      return _human.name;
-    };
-
-    this.setHumanName = function (newHumanName) {
-      var oldHumanName = _human.name;
-      _human.name = newHumanName;
-
-      var humanUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GuiBot.TYPES.HUMAN);
-      var humanUsernameElementsArray = Array.prototype.slice.call(humanUsernameElements);
-
-      humanUsernameElementsArray.map(function (eachHumanUsername) {
-        eachHumanUsername.innerHTML = _human.name;
+    this.removeAllUsers = function () {
+      _users.map(function (eachUser) {
+        this.removeUserById(eachUser.id);
       });
 
-      this.emit(GuiBot.GUIBOT_EVENTS.HUMAN_NAME_CHANGED, oldHumanName, _human.name);
-    };
-
-    this.getBotNameColor = function () {
-      return _bot.color;
-    };
-
-    this.setBotNameColor = function (newBotNameColor) {
-      var oldBotNameColor = _bot.color;
-      _bot.color = newBotNameColor;
-
-      var botUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GuiBot.TYPES.BOT);
-      var botUsernameElementsArray = Array.prototype.slice.call(botUsernameElements);
-
-      botUsernameElementsArray.map(function (eachBotUsername) {
-        eachBotUsername.style.color = _bot.color;
-      });
-
-      this.emit(GuiBot.GUIBOT_EVENTS.BOT_NAME_COLOR_CHANGED, oldBotNameColor, _bot.color);
-    };
-
-    this.getHumanNameColor = function () {
-      return _human.color;
-    };
-
-    this.setHumanNameColor = function (newHumanNameColor) {
-      var oldHumanNameColor = _human.color;
-      _human.color = newHumanNameColor;
-
-      var humanUsernameElements = _rootContainer.getElementsByClassName('guibot-message-username ' + GuiBot.TYPES.HUMAN);
-      var humanUsernameElementsArray = Array.prototype.slice.call(humanUsernameElements);
-
-      humanUsernameElementsArray.map(function (eachHumanUsername) {
-        eachHumanUsername.style.color = _human.color;
-      });
-
-      this.emit(GuiBot.GUIBOT_EVENTS.HUMAN_NAME_COLOR_CHANGED, oldHumanNameColor, _human.color);
-    };
-
-    this.getBotIcon = function () {
-      return _bot.icon;
-    };
-
-    this.setBotIcon = function (newBotIcon) {
-      var oldBotIcon = _bot.icon;
-      _bot.icon = newBotIcon;
-
-      var botIconElements = _rootContainer.getElementsByClassName('guibot-message-icon ' + GuiBot.TYPES.BOT);
-      var botIconElementsArray = Array.prototype.slice.call(botIconElements);
-
-      botIconElementsArray.map(function (eachBotIcon) {
-        eachBotIcon.src = _bot.icon;
-      });
-
-      this.emit(GuiBot.GUIBOT_EVENTS.BOT_ICON_CHANGED, oldBotIcon, _bot.icon);
-    };
-
-    this.getHumanIcon = function () {
-      return _human.icon;
-    };
-
-    this.setHumanIcon = function (newHumanIcon) {
-      var oldHumanIcon = _human.icon;
-      _human.icon = newHumanIcon;
-
-      var humanIconElements = _rootContainer.getElementsByClassName('guibot-message-icon ' + GuiBot.TYPES.HUMAN);
-      var humanIconElementsArray = Array.prototype.slice.call(humanIconElements);
-
-      humanIconElementsArray.map(function (eachHumanIcon) {
-        eachHumanIcon.src = _human.icon;
-      });
-
-      this.emit(GuiBot.GUIBOT_EVENTS.HUMAN_ICON_CHANGED, oldHumanIcon, _human.icon);
+      _users = [];
     };
 
     this.getRootContainer = function () {
@@ -453,21 +554,23 @@ window.GuiBot = (function () {
 
     this.updateMessageById = function (messageId, newMessage) {
       var message = this.getMessageById(messageId);
-      var oldMessage = JSON.parse(JSON.stringify(message));
-
       message.message = newMessage;
 
-      var messageContainer = [].find.call(message.element.children, function (child) {
-        return [].indexOf.call(child.classList, 'guibot-message') !== -1;
-      });
-
-      var messageToUpdate = [].find.call(messageContainer.children, function (child) {
-        return child.className === 'guibot-message-text';
-      });
-
-      messageToUpdate.innerHTML = newMessage;
-
-      this.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_UPDATED, oldMessage, message);
+      // var oldMessage = JSON.parse(JSON.stringify(message));
+      //
+      // message.message = newMessage;
+      //
+      // var messageContainer = [].find.call(message.element.children, function (child) {
+      //   return [].indexOf.call(child.classList, 'guibot-message') !== -1;
+      // });
+      //
+      // var messageToUpdate = [].find.call(messageContainer.children, function (child) {
+      //   return child.className === 'guibot-message-text';
+      // });
+      //
+      // messageToUpdate.innerHTML = newMessage;
+      //
+      // this.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_UPDATED, oldMessage, message);
     };
 
     this.removeMessageById = function (messageId) {
@@ -481,67 +584,46 @@ window.GuiBot = (function () {
       this.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_REMOVED, messageToRemove);
     };
 
+    this.removeAllMessages = function () {
+      _messages.map(function (eachMessage) {
+        this.removeMessageById(eachMessage.id);
+      });
+
+      _messages = [];
+    };
+
     this.destroy = function () {
       while (_rootContainer.firstChild) _rootContainer.removeChild(_rootContainer.firstChild);
 
+      this.removeAllUsers();
+      this.removeAllMessages();
+
       _id = null;
       _rootContainer = null;
-      _messages = [];
-      _bot = null;
-      _human = null;
     };
   }
 
   GuiBot.prototype = Object.create(Deventor.prototype);
   GuiBot.prototype.constructor = GuiBot;
 
-  GuiBot.TYPES = {
-    BOT: 'bot',
-    HUMAN: 'human'
-  };
-  Object.freeze(GuiBot.TYPES);
-
   GuiBot.VERSION = {
-    full: '0.0.3',
+    full: '0.1.0',
     major: 0,
-    minor: 0,
-    patch: 3
+    minor: 1,
+    patch: 0
   };
 
   Object.freeze(GuiBot.VERSION);
 
   GuiBot.GUIBOT_DEFAULTS = {
-    BOT: {
-      ICON: 'https://www.shareicon.net/download/2017/04/14/883959_science.svg',
-      NAME: 'Mr. Robot',
-      NAME_COLOR: '#D73925'
-    },
-    HUMAN: {
-      ICON: 'https://www.shareicon.net/download/2016/01/19/705714_people.svg',
-      NAME: 'Me',
-      NAME_COLOR: '#5F7BC0'
-    },
     INPUT_PLACEHOLDER: 'Write a message here'
   };
 
-  var EVENT_PREFIX = 'GuiBot:';
-  GuiBot.GUIBOT_EVENTS = {
-    MESSAGE_SAID: EVENT_PREFIX + 'messageSaid',
-    MESSAGE_UPDATED: EVENT_PREFIX + 'messageUpdated',
-    MESSAGE_REMOVED: EVENT_PREFIX + 'messageRemoved',
-    MESSAGE_OPTION_CLICKED: EVENT_PREFIX + 'messageOptionClicked',
-    NAME_CHANGED: EVENT_PREFIX + 'nameChanged',
-    BOT_ICON_CHANGED: EVENT_PREFIX + 'botIconChanged',
-    BOT_NAME_CHANGED: EVENT_PREFIX + 'botNameChanged',
-    BOT_NAME_COLOR_CHANGED: EVENT_PREFIX + 'botNameColorChanged',
-    HUMAN_ICON_CHANGED: EVENT_PREFIX + 'humanIconChanged',
-    HUMAN_NAME_CHANGED: EVENT_PREFIX + 'humanNameChanged',
-    HUMAN_NAME_COLOR_CHANGED: EVENT_PREFIX + 'humanNameColorChanged'
-  };
+  GuiBot.GUIBOT_EVENTS = Events;
 
   Object.freeze(GuiBot.GUIBOT_EVENTS);
 
   return GuiBot;
-})();
+})(Events, Utils, User, Message, Deventor);
 
 }(window.Deventor));

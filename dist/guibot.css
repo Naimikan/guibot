@@ -33,10 +33,10 @@
 .guibot-container .guibot-chat-container .guibot-message-container {
   margin: 19px;
 }
-.guibot-container .guibot-chat-container .guibot-message-container[data-message-type='bot'] {
+.guibot-container .guibot-chat-container .guibot-message-container[data-message-type='remote'] {
   text-align: left;
 }
-.guibot-container .guibot-chat-container .guibot-message-container[data-message-type='human'] {
+.guibot-container .guibot-chat-container .guibot-message-container[data-message-type='local'] {
   text-align: right;
 }
 .guibot-container .guibot-chat-container .guibot-message-container .guibot-message-icon-container {
@@ -72,10 +72,10 @@
   -moz-box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
   box-shadow: 0px 15px 36px -5px rgba(0, 0, 0, 0.26);
 }
-.guibot-container .guibot-chat-container .guibot-message-container .guibot-message.bot {
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message.remote {
   background-color: #FFFFFF;
 }
-.guibot-container .guibot-chat-container .guibot-message-container .guibot-message.human {
+.guibot-container .guibot-chat-container .guibot-message-container .guibot-message.local {
   background-color: #FFFFFF;
 }
 .guibot-container .guibot-chat-container .guibot-message-container .guibot-message .guibot-message-username {

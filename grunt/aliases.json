@@ -4,8 +4,8 @@
 	],
 	"build": [
 		"clean:dist",
-		"jshint",
 		"concat:dist",
+		"jshint",
 		"less:dist",
 		"uglify"
 	],
