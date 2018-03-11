@@ -67,7 +67,7 @@ var Message = (function (Utils, Events, Deventor) {
       var messageUsername = document.createElement('div');
       messageUsername.className = 'guibot-message-username ' + (isLocal ? 'local' : 'remote');
       messageUsername.innerHTML = user.name;
-      // messageUsername.style.color = user.color;
+      messageUsername.style.color = user.color.toRGBA();
 
       messageContainer.appendChild(messageUsername);
     };

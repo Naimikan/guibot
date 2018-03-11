@@ -1,6 +1,6 @@
 {
   "name": "guibot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A pure Javascript framework to create conversational UIs",
   "main": "dist/guibot.min.js",
   "scripts": {

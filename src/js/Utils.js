@@ -2,7 +2,7 @@ var Utils = (function () {
   return {
     generateGUID: function () {
       function partGUID () {
-        return Math.floor((1 + Math.random() + ((navigator.hardwareConcurrency || Math.random()) * window.innerHeight * window.innerWidth) + (new Date().getTime())) * 0x10000).toString(16).substring(1);
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
       }
 
       return partGUID() + partGUID() + '-' + partGUID() + '-' + partGUID() + '-' + partGUID() + '-' + partGUID() + partGUID() + partGUID();
@@ -27,8 +27,20 @@ var Utils = (function () {
     isDefinedAndNotNull: function (value) {
       return typeof value !== 'undefined' && value !== null;
     },
+    isInteger: function (variable) {
+      return (typeof variable === 'number' && isFinite(variable) && Math.floor(variable) === variable);
+    },
+    isFloat:function (variable) {
+      return (typeof variable === 'number' && isFinite(variable) && Math.floor(variable) !== variable);
+    },
+    isValidNumber: function (variable) {
+      return (typeof variable === 'number' && isFinite(variable));
+    },
     isBoolean: function (variable) {
       return variable === true || variable === false || (typeof variable === 'object' && variable !== null) || variable.toString() === '[object Boolean]';
+    },
+    isString: function (variable) {
+      return Object.prototype.toString.call(variable) === '[object String]';
     }
   };
 })();

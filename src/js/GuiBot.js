@@ -180,7 +180,13 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
     };
 
     this.addUser = function (user) {
+      var self = this;
       var userToAdd = new User(user);
+
+      userToAdd.on(GuiBot.GUIBOT_EVENTS.USER_NAME_CHANGED, function (oldUser, newUser) {
+        self.emit(GuiBot.GUIBOT_EVENTS.USER_UPDATED, oldUser, newUser);
+      });
+
       _users.push(userToAdd);
 
       this.emit(GuiBot.GUIBOT_EVENTS.USER_ADDED, userToAdd);
@@ -239,15 +245,15 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
       return _messages;
     };
 
-    this.setMessages = function (messages) {
-      messages.map(function (eachMessage) {
-        _say(eachMessage.type, {
-          ts: eachMessage.ts,
-          message: eachMessage.message,
-          user: eachMessage.user
-        });
-      });
-    };
+    // this.setMessages = function (messages) {
+    //   messages.map(function (eachMessage) {
+    //     _say(eachMessage.type, {
+    //       ts: eachMessage.ts,
+    //       message: eachMessage.message,
+    //       user: eachMessage.user
+    //     });
+    //   });
+    // };
 
     this.getMessageById = function (messageId) {
       return _messages.find(function (eachMessage) {
@@ -258,22 +264,6 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
     this.updateMessageById = function (messageId, newMessage) {
       var message = this.getMessageById(messageId);
       message.message = newMessage;
-
-      // var oldMessage = JSON.parse(JSON.stringify(message));
-      //
-      // message.message = newMessage;
-      //
-      // var messageContainer = [].find.call(message.element.children, function (child) {
-      //   return [].indexOf.call(child.classList, 'guibot-message') !== -1;
-      // });
-      //
-      // var messageToUpdate = [].find.call(messageContainer.children, function (child) {
-      //   return child.className === 'guibot-message-text';
-      // });
-      //
-      // messageToUpdate.innerHTML = newMessage;
-      //
-      // this.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_UPDATED, oldMessage, message);
     };
 
     this.removeMessageById = function (messageId) {
@@ -310,10 +300,10 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
   GuiBot.prototype.constructor = GuiBot;
 
   GuiBot.VERSION = {
-    full: '0.1.0',
+    full: '0.1.1',
     major: 0,
     minor: 1,
-    patch: 0
+    patch: 1
   };
 
   Object.freeze(GuiBot.VERSION);

@@ -5,8 +5,8 @@
 			"footer": "\n}(window.Deventor));"
 		},
 		"files": {
-			"dist/<%= package.name %>.js": ["src/js/Events.js", "src/js/Utils.js", "src/js/User.js", "src/js/Message.js", "src/js/GuiBot.js"],
-			"public/lib/<%= package.name %>.js": ["src/js/Events.js", "src/js/Utils.js", "src/js/User.js", "src/js/Message.js", "src/js/GuiBot.js"]
+			"dist/<%= package.name %>.js": ["src/js/Events.js", "src/js/Utils.js", "src/js/Color.js", "src/js/User.js", "src/js/Message.js", "src/js/GuiBot.js"],
+			"public/lib/<%= package.name %>.js": ["src/js/Events.js", "src/js/Utils.js", "src/js/Color.js", "src/js/User.js", "src/js/Message.js", "src/js/GuiBot.js"]
 		}
 	}
 }
