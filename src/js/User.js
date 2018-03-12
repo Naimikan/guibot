@@ -1,4 +1,4 @@
-var User = (function (Utils, Events, Color, Deventor) {
+var User = (function (Utils, Events, Color, Message, Deventor) {
   function User (options) {
     Deventor.call(this);
 
@@ -12,7 +12,7 @@ var User = (function (Utils, Events, Color, Deventor) {
 
     for (var attr in options) {
       if (options.hasOwnProperty(attr)) {
-        if (attr !== 'name' && attr !== 'color' && attr !== 'isLocal' && attr !== 'icon') {
+        if (attr !== 'id' && attr !== 'name' && attr !== 'color' && attr !== 'isLocal' && attr !== 'icon') {
           _extra[attr] = options[attr];
         }
       }
@@ -58,12 +58,46 @@ var User = (function (Utils, Events, Color, Deventor) {
         var oldUser = this.toJSON();
         _icon = newIcon;
 
+        _messages.map(function (eachMessage) {
+          var messageIconContainer = [].find.call(eachMessage.element.children, function (child) {
+            return [].indexOf.call(child.classList, 'guibot-message-icon-container') !== -1;
+          });
+
+          var messageIconToUpdate = [].find.call(messageIconContainer.children, function (child) {
+            return [].indexOf.call(child.classList, 'guibot-message-icon') !== -1;
+          });
+
+          messageIconToUpdate.src = _icon;
+        });
+
         this.emit(Events.USER_ICON_CHANGED, oldUser, this.toJSON());
       }
     });
 
     Object.defineProperty(this, 'color', {
-      get: function () { return _color; }
+      get: function () { return _color; },
+      set: function (newColor) {
+        if (Color.isValid(newColor)) {
+          var oldUser = this.toJSON();
+          _color = newColor;
+
+          _messages.map(function (eachMessage) {
+            var messageContainer = [].find.call(eachMessage.element.children, function (child) {
+              return [].indexOf.call(child.classList, 'guibot-message') !== -1;
+            });
+
+            var messageToUpdate = [].find.call(messageContainer.children, function (child) {
+              return [].indexOf.call(child.classList, 'guibot-message-username') !== -1;
+            });
+
+            messageToUpdate.style.color = _color.toRGBA();
+          });
+
+          this.emit(Events.USER_COLOR_CHANGED, oldUser, this.toJSON());
+        } else {
+          throw new Error('Invalid color');
+        }
+      }
     });
 
     this.getMessages = function () {
@@ -77,7 +111,11 @@ var User = (function (Utils, Events, Color, Deventor) {
     };
 
     this.addMessage = function (message) {
-      _messages.push(message);
+      if (Message.isValid(message)) {
+        _messages.push(message);
+      } else {
+        throw new Error('Invalid message');
+      }
     };
 
     this.toJSON = function () {
@@ -102,5 +140,9 @@ var User = (function (Utils, Events, Color, Deventor) {
   User.prototype = Object.create(Deventor.prototype);
   User.prototype.constructor = User;
 
+  User.isValid = function (user) {
+    return user instanceof User;
+  };
+
   return User;
-})(Utils, Events, Color, Deventor);
+})(Utils, Events, Color, Message, Deventor);

@@ -10,9 +10,9 @@ var Events = (function () {
     NAME_CHANGED: EVENT_PREFIX + 'nameChanged',
 
     USER_ADDED: EVENT_PREFIX + 'userAdded',
-    USER_UPDATED: EVENT_PREFIX + 'userUpdated',
     USER_REMOVED: EVENT_PREFIX + 'userRemoved',
     USER_NAME_CHANGED: EVENT_PREFIX + 'userNameChanged',
-    USER_ICON_CHANGED: EVENT_PREFIX + 'userIconChanged'
+    USER_ICON_CHANGED: EVENT_PREFIX + 'userIconChanged',
+    USER_COLOR_CHANGED: EVENT_PREFIX + 'userColorChanged'
   };
 })();

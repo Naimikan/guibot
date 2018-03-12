@@ -114,36 +114,40 @@ var Chat = (function (Events, Utils, User, Message, Deventor) {
           options.message = options.message || '';
 
           _resolveMessage(options.message).then(function (message) {
+            var user;
+
             if (Utils.isDefinedAndNotNull(options.userId)) {
-              var user = self.getUserById(options.userId);
-
-              var messageInstance = new Message({
-                ts: options.ts,
-                message: message,
-                user: user,
-                imageUrl: options.imageUrl,
-                videoUrl: options.videoUrl
-              });
-
-              messageInstance.on(Events.MESSAGE_UPDATED, function (oldValue, newValue) {
-                self.emit(Events.MESSAGE_UPDATED, oldValue, newValue);
-              });
-
-              user.addMessage(messageInstance);
-
-              _messages.push(messageInstance);
-
-              _guibotChatContainer.appendChild(messageInstance.element);
-
-              Utils.scrollToDownByContainer(_guibotChatContainer);
-
-              self.emit(Events.MESSAGE_SAID, messageInstance);
-
-              _toggleEditInputBox(true);
-              resolve();
+              user = self.getUserById(options.userId);
+            } else if (Utils.isDefinedAndNotNull(options.user) && User.isValid(options.user)) {
+              user = options.user;
             } else {
-              reject(new Error('User ID required'));
+              reject(new Error('User required'));
             }
+
+            var messageInstance = new Message({
+              ts: options.ts,
+              message: message,
+              user: user,
+              imageUrl: options.imageUrl,
+              videoUrl: options.videoUrl
+            });
+
+            messageInstance.on(Events.MESSAGE_UPDATED, function (oldValue, newValue) {
+              self.emit(Events.MESSAGE_UPDATED, oldValue, newValue);
+            });
+
+            user.addMessage(messageInstance);
+
+            _messages.push(messageInstance);
+
+            _guibotChatContainer.appendChild(messageInstance.element);
+
+            Utils.scrollToDownByContainer(_guibotChatContainer);
+
+            self.emit(Events.MESSAGE_SAID, messageInstance);
+
+            _toggleEditInputBox(true);
+            resolve();
           });
         });
       });
@@ -175,7 +179,15 @@ var Chat = (function (Events, Utils, User, Message, Deventor) {
       var userToAdd = new User(user);
 
       userToAdd.on(Events.USER_NAME_CHANGED, function (oldUser, newUser) {
-        self.emit(Events.USER_UPDATED, oldUser, newUser);
+        self.emit(Events.USER_NAME_CHANGED, oldUser, newUser);
+      });
+
+      userToAdd.on(Events.USER_ICON_CHANGED, function (oldUser, newUser) {
+        self.emit(Events.USER_ICON_CHANGED, oldUser, newUser);
+      });
+
+      userToAdd.on(Events.USER_COLOR_CHANGED, function (oldUser, newUser) {
+        self.emit(Events.USER_COLOR_CHANGED, oldUser, newUser);
       });
 
       _users.push(userToAdd);
@@ -203,6 +215,8 @@ var Chat = (function (Events, Utils, User, Message, Deventor) {
       });
 
       this.emit(Events.USER_REMOVED, userToRemove);
+
+      userToRemove = null;
     };
 
     this.removeAllUsers = function () {

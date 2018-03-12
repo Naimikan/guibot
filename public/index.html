@@ -27,7 +27,14 @@
 
       myChat.say({
         message: 'Hi! I\'m a message from local user',
-        userId: myChat.getLocalUser().id
+        user: myChat.getLocalUser()
+      }).then(function () {
+        console.log(myChat.getLocalUser().getMessages());
+
+        setTimeout(function () {
+           myChat.getLocalUser().icon = 'https://qnamaker.ai/Content/themes/images/azure-bot-service.png';
+           myChat.getLocalUser().color = new guibot.Color();
+        }, 2000);
       });
 
       myChat.on(guibot.EVENTS.MESSAGE_SAID, function (messageObject) {
@@ -39,6 +46,10 @@
       });
 
       myChat.on(guibot.EVENTS.USER_NAME_CHANGED, function (oldUser, newUser) {
+        console.log(oldUser, newUser);
+      });
+
+      myChat.on(guibot.EVENTS.USER_ICON_CHANGED, function (oldUser, newUser) {
         console.log(oldUser, newUser);
       });
     </script>

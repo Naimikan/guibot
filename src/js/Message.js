@@ -176,5 +176,9 @@ var Message = (function (Utils, Events, Deventor) {
   Message.prototype = Object.create(Deventor.prototype);
   Message.prototype.constructor = Message;
 
+  Message.isValid = function (message) {
+    return message instanceof Message;
+  };
+
   return Message;
 })(Utils, Events, Deventor);
