@@ -13,40 +13,32 @@
 
   <body style="margin: 0px; background-color: #DDDDDD; overflow: hidden;">
     <script>
-      var guiBot = new GuiBot();
-
-      var user1 = guiBot.addUser({
-        name: 'User 1'
+      var myChat = new guibot.Chat({
+        name: 'myChat',
+        users: [
+          {
+            name: 'Robot'
+          }, {
+            name: 'Me',
+            isLocal: true
+          }
+        ]
       });
 
-      guiBot.say({
-        message: 'Ey',
-        userId: user1.id,
-        delay: 1000
-      }).then(function () {
-        guiBot.say({
-          message: 'Image',
-          userId: user1.id,
-          delay: 2000,
-          imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Burgwall_Lossow_Pano_-14_images.jpg'
-        }).then(function () {
-          guiBot.updateMessageById(user1.getMessages()[0].id, 'modified');
-
-          setTimeout(function () {
-            user1.name = 'User 1 modified';
-          }, 2000);
-        });
+      myChat.say({
+        message: 'Hi! I\'m a message from local user',
+        userId: myChat.getLocalUser().id
       });
 
-      guiBot.on(GuiBot.GUIBOT_EVENTS.MESSAGE_SAID, function (messageObject) {
+      myChat.on(guibot.EVENTS.MESSAGE_SAID, function (messageObject) {
         console.log(messageObject);
       });
 
-      guiBot.on(GuiBot.GUIBOT_EVENTS.MESSAGE_UPDATED, function (oldValue, newValue) {
+      myChat.on(guibot.EVENTS.MESSAGE_UPDATED, function (oldValue, newValue) {
         console.log(oldValue, newValue);
       });
 
-      guiBot.on(GuiBot.GUIBOT_EVENTS.USER_NAME_CHANGED, function (oldUser, newUser) {
+      myChat.on(guibot.EVENTS.USER_NAME_CHANGED, function (oldUser, newUser) {
         console.log(oldUser, newUser);
       });
     </script>

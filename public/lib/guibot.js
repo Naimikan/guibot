@@ -1,5 +1,5 @@
 /*!
-*  guibot 0.1.1 2018-03-11
+*  guibot 0.2.0 2018-03-12
 *  A pure Javascript framework to create conversational UIs
 *  git: git+https://github.com/Naimikan/guibot.git
 */
@@ -513,22 +513,13 @@ var Message = (function (Utils, Events, Deventor) {
   return Message;
 })(Utils, Events, Deventor);
 
-window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
-  // Unsupported promises
-  if (!(typeof Promise !== 'undefined' && Promise.toString().indexOf('[native code]') !== -1)) {
-    throw new Error('Sorry, your browser doesn\'t support Promises.');
-  }
+var Chat = (function (Events, Utils, User, Message, Deventor) {
+  function Chat (settings) {
+    var self = this;
 
-  if (typeof Deventor === 'undefined') {
-    throw new Error('Deventor is not included.');
-  }
-
-  function GuiBot (settings) {
     Deventor.call(this);
 
     settings = settings || {};
-
-    var self = this;
 
     var _messages = [];
     var _users = [];
@@ -568,7 +559,7 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
     _guibotInput.setAttribute('dir', 'auto');
     _guibotInput.setAttribute('spellcheck', true);
     _guibotInput.setAttribute('contenteditable', true);
-    _guibotInput.setAttribute('data-placeholder', GuiBot.GUIBOT_DEFAULTS.INPUT_PLACEHOLDER);
+    _guibotInput.setAttribute('data-placeholder', Chat.DEFAULTS.INPUT_PLACEHOLDER);
     _guibotInput.className = _guibotInput.getAttribute('id');
 
     _guibotInput.addEventListener('input', function (event) {
@@ -649,8 +640,8 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
                 videoUrl: options.videoUrl
               });
 
-              messageInstance.on(GuiBot.GUIBOT_EVENTS.MESSAGE_UPDATED, function (oldValue, newValue) {
-                self.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_UPDATED, oldValue, newValue);
+              messageInstance.on(Events.MESSAGE_UPDATED, function (oldValue, newValue) {
+                self.emit(Events.MESSAGE_UPDATED, oldValue, newValue);
               });
 
               user.addMessage(messageInstance);
@@ -661,7 +652,7 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
 
               Utils.scrollToDownByContainer(_guibotChatContainer);
 
-              self.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_SAID, messageInstance);
+              self.emit(Events.MESSAGE_SAID, messageInstance);
 
               _toggleEditInputBox(true);
               resolve();
@@ -698,13 +689,13 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
       var self = this;
       var userToAdd = new User(user);
 
-      userToAdd.on(GuiBot.GUIBOT_EVENTS.USER_NAME_CHANGED, function (oldUser, newUser) {
-        self.emit(GuiBot.GUIBOT_EVENTS.USER_UPDATED, oldUser, newUser);
+      userToAdd.on(Events.USER_NAME_CHANGED, function (oldUser, newUser) {
+        self.emit(Events.USER_UPDATED, oldUser, newUser);
       });
 
       _users.push(userToAdd);
 
-      this.emit(GuiBot.GUIBOT_EVENTS.USER_ADDED, userToAdd);
+      this.emit(Events.USER_ADDED, userToAdd);
 
       return userToAdd;
     };
@@ -726,7 +717,7 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
         return userId !== eachUser.id;
       });
 
-      this.emit(GuiBot.GUIBOT_EVENTS.USER_REMOVED, userToRemove);
+      this.emit(Events.USER_REMOVED, userToRemove);
     };
 
     this.removeAllUsers = function () {
@@ -753,7 +744,7 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
       var oldName = _name;
       _name = newGuiBotName;
 
-      this.emit(GuiBot.GUIBOT_EVENTS.NAME_CHANGED, oldName, _name);
+      this.emit(Events.NAME_CHANGED, oldName, _name);
     };
 
     this.getMessages = function () {
@@ -789,7 +780,7 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
         return messageId !== eachMessage.id;
       });
 
-      this.emit(GuiBot.GUIBOT_EVENTS.MESSAGE_REMOVED, messageToRemove);
+      this.emit(Events.MESSAGE_REMOVED, messageToRemove);
     };
 
     this.removeAllMessages = function () {
@@ -809,29 +800,53 @@ window.GuiBot = (function (Events, Utils, User, Message, Deventor) {
       _id = null;
       _rootContainer = null;
     };
+
+    /* Initialization */
+    if (Utils.isDefinedAndNotNull(settings.users) && Array.isArray(settings.users)) {
+      settings.users.map(function (eachUser) {
+        self.addUser(eachUser);
+      });
+    }
   }
 
-  GuiBot.prototype = Object.create(Deventor.prototype);
-  GuiBot.prototype.constructor = GuiBot;
+  Chat.prototype = Object.create(Deventor.prototype);
+  Chat.prototype.constructor = Chat;
 
-  GuiBot.VERSION = {
-    full: '0.1.1',
-    major: 0,
-    minor: 1,
-    patch: 1
-  };
-
-  Object.freeze(GuiBot.VERSION);
-
-  GuiBot.GUIBOT_DEFAULTS = {
+  Chat.DEFAULTS = {
     INPUT_PLACEHOLDER: 'Write a message here'
   };
 
-  GuiBot.GUIBOT_EVENTS = Events;
-
-  Object.freeze(GuiBot.GUIBOT_EVENTS);
-
-  return GuiBot;
+  return Chat;
 })(Events, Utils, User, Message, Deventor);
+
+window.guibot = (function (Events, Utils, Color, User, Message, Chat, Deventor) {
+  // Unsupported promises
+  if (!(typeof Promise !== 'undefined' && Promise.toString().indexOf('[native code]') !== -1)) {
+    throw new Error('Sorry, your browser doesn\'t support Promises.');
+  }
+
+  if (typeof Deventor === 'undefined') {
+    throw new Error('Deventor is not included.');
+  }
+
+  return {
+    Chat: Chat,
+    Message: Message,
+    User: User,
+    Color: Color,
+
+    get VERSION () {
+      return {
+        full: '0.2.0',
+        major: 0,
+        minor: 2,
+        patch: 0
+      };
+    },
+    get EVENTS () {
+      return Events;
+    }
+  };
+})(Events, Utils, Color, User, Message, Chat, Deventor);
 
 }(window.Deventor));
